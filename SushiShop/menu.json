@@ -1,0 +1,34 @@
+{
+  "sushi": [
+    {
+      "name": "philadelphia",
+      "amount": 8,
+      "price": 11
+    },
+    {
+      "name": "umaki",
+      "amount": 8,
+      "price": 5
+    },
+    {
+      "name": "satoshi",
+      "amount": 8,
+      "price": 15
+    },
+    {
+      "name": "yatumaki",
+      "amount": 8,
+      "price": 15
+    },
+    {
+      "name": "set classic with philadelphia&umaki",
+      "amount": 24,
+      "price": 30
+    },
+    {
+      "name": "set #2 with yatumaki&satoshi",
+      "amount": 28,
+      "price": 45
+    }
+  ]
+}

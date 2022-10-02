@@ -1,3 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using SushiShop;
 
-Console.WriteLine("Hello, World!");
+Bot bot = new Bot();
+bot.SayHelloToCustomer();
+bot.ShowMenu();
+bot.AskCustomerWhatAddToCart();
+bot.ShowCustomerOrder();
