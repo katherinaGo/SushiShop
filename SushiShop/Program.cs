@@ -2,6 +2,7 @@
 
 Bot bot = new Bot();
 bot.SayHelloToCustomer();
-bot.ShowMenu();
 bot.AskCustomerWhatAddToCart();
 bot.ShowCustomerOrder();
+bot.AskCustomerForNameAndAddressForOrder();
+bot.AskCustomerToPay();
