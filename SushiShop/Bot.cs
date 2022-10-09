@@ -8,6 +8,7 @@ public class Bot
     private Customer _customer;
     private List<Sushi> _sushiDish;
     private Order _order;
+    private bool _isPaid;
 
     public Bot()
     {
@@ -69,7 +70,7 @@ public class Bot
         } while (true);
     }
 
-    public void ShowCustomerOrder()
+    public void ShowCustomerItemsInCart()
     {
         int totalPrice = 0;
         int counter = 1;
@@ -95,62 +96,101 @@ public class Bot
 
     public void AskCustomerForNameAndAddressForOrder()
     {
-        string customerInput;
-        do
+        if (_order.CartWithSushi.Count != 0)
         {
-            _customer.Name = AskCustomerName();
-            Console.WriteLine("Was the name typed correctly?  Type Y for confirming or N to change.");
-            customerInput = Console.ReadLine()?.ToLower()!;
-            if (customerInput.Equals("y"))
+            string customerInput;
+            do
             {
-                break;
-            }
+                _customer.Name = AskCustomerName();
+                Console.WriteLine("Was the name typed correctly?  Type Y for confirming or N to change.");
+                customerInput = Console.ReadLine()?.ToLower()!;
+                if (customerInput.Equals("y"))
+                {
+                    break;
+                }
 
-            if (!customerInput.Equals("n"))
+                if (!customerInput.Equals("n"))
+                {
+                    Console.WriteLine("No such option.");
+                }
+            } while (true);
+
+            do
             {
-                Console.WriteLine("No such option.");
-            }
-        } while (true);
+                _customer.Surname = AskCustomerSurname();
+                Console.WriteLine("Was the surname typed correctly?  Type Y for confirming or N to change.");
+                customerInput = Console.ReadLine()?.ToLower()!;
+                if (customerInput.Equals("y"))
+                {
+                    break;
+                }
 
-        do
+                if (!customerInput.Equals("n"))
+                {
+                    Console.WriteLine("No such option.");
+                }
+            } while (true);
+
+            do
+            {
+                _customer.Address = AskCustomerAddress();
+                Console.WriteLine("Was the address typed correctly?  Type Y for confirming or N to change.");
+                customerInput = Console.ReadLine()?.ToLower()!;
+                if (customerInput.Equals("y"))
+                {
+                    break;
+                }
+
+                if (!customerInput.Equals("n"))
+                {
+                    Console.WriteLine("No such option.");
+                }
+            } while (true);
+
+            Console.WriteLine(
+                $"Dear {_customer.Name} {_customer.Surname}, your order will be delivered to the following address: " +
+                $"{_customer.Address} during 2h after successfully payment.");
+        }
+        else
         {
-            _customer.Surname = AskCustomerSurname();
-            Console.WriteLine("Was the surname typed correctly?  Type Y for confirming or N to change.");
-            customerInput = Console.ReadLine()?.ToLower()!;
-            if (customerInput.Equals("y"))
-            {
-                break;
-            }
-
-            if (!customerInput.Equals("n"))
-            {
-                Console.WriteLine("No such option.");
-            }
-        } while (true);
-
-        do
-        {
-            _customer.Address = AskCustomerAddress();
-            Console.WriteLine("Was the address typed correctly?  Type Y for confirming or N to change.");
-            customerInput = Console.ReadLine()?.ToLower()!;
-            if (customerInput.Equals("y"))
-            {
-                break;
-            }
-
-            if (!customerInput.Equals("n"))
-            {
-                Console.WriteLine("No such option.");
-            }
-        } while (true);
-
-        Console.WriteLine(
-            $"Dear {_customer.Name} {_customer.Surname}, your order will be delivered to the following address: " +
-            $"{_customer.Address} during 2h after successfully payment.");
+            Console.WriteLine("Good bye! Have a nice day!");
+        }
     }
 
     public void AskCustomerToPay()
     {
+        if (_order.CartWithSushi.Count != 0)
+        {
+            Console.WriteLine(
+                $"You have to pay {_order.TotalOrderPrice}€ for your order. Your balance: {_customer.AmountOfMoney}€.");
+            if (CheckIfCustomerHaveEnoughMoneyToPay().Equals(true))
+            {
+                Console.WriteLine("You have enough money on your balance to pay.");
+                Console.WriteLine("Do you confirm you order and ready to pay? Type Y for confirming or N to cancel.");
+                string customerInput = Console.ReadLine()?.ToLower()!;
+                if (customerInput.Equals("y"))
+                {
+                    Console.WriteLine("Getting your money...");
+                    _customer.AmountOfMoney -= _order.TotalOrderPrice;
+                    Console.WriteLine($"Successfully paid. Your current balance:  {_customer.AmountOfMoney}€.");
+                    _isPaid = true;
+                }
+            }
+            else
+            {
+                _isPaid = false;
+            }
+        }
+    }
+
+    public void ShowCustomerItemsToDeliver()
+    {
+        if (_isPaid.Equals(true))
+        {
+            Console.WriteLine(
+                $"Dear {_customer.Name} {_customer.Surname}, your order: is going to be delivered to {_customer.Address} in 2 hours. " +
+                $"\n{_order.CartWithSushi}");
+        }
     }
 
     private void ShowMenu()
@@ -218,5 +258,15 @@ public class Bot
         }
 
         return _customer.Address!;
+    }
+
+    private bool CheckIfCustomerHaveEnoughMoneyToPay()
+    {
+        if (_customer.AmountOfMoney >= _order.TotalOrderPrice)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
