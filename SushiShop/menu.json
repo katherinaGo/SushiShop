@@ -2,6 +2,11 @@
   "sushi": [
     {
       "name": "philadelphia",
+      "amount": 1,
+      "price": 2
+    },
+    {
+      "name": "philadelphia",
       "amount": 8,
       "price": 11
     },

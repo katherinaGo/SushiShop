@@ -6,9 +6,10 @@ namespace SushiShop;
 public class Bot
 {
     private Customer _customer;
-    private List<Sushi> _sushiDish;
+    private List<Sushi> _sushiMenu;
     private Order _order;
     private bool _isPaid;
+    private ConsoleViewController _console;
 
     public Bot()
     {
@@ -34,20 +35,20 @@ public class Bot
                 Console.WriteLine("Do you want to add more sushi to your order? Type Y or N.");
             }
 
-            string customerInput0 = Console.ReadLine()?.ToLower()!;
-            if (customerInput0.Equals("y"))
+            string customerInput = Console.ReadLine()?.ToLower()!;
+            if (customerInput.Equals("y"))
             {
                 ShowMenu();
                 Console.WriteLine("What position do you want to order? Type number from the menu above. ");
-                string customerInput = Console.ReadLine()!;
+                customerInput = Console.ReadLine()!;
                 try
                 {
                     int position = int.Parse(customerInput, NumberStyles.Integer);
 
-                    for (int i = 0; i < _sushiDish.Count; i++)
+                    for (int i = 0; i < _sushiMenu.Count; i++)
                     {
-                        _order.CartWithSushi.Add(_sushiDish[position - 1]);
-                        Console.WriteLine($"Position #{position} '{_sushiDish[position - 1]}' was added to Cart.");
+                        _order.CartWithSushi.Add(_sushiMenu[position - 1]);
+                        Console.WriteLine($"Position #{position} '{_sushiMenu[position - 1]}' was added to Cart.");
                         break;
                     }
 
@@ -56,9 +57,10 @@ public class Bot
                 catch (Exception e)
                 {
                     Console.WriteLine("We don't have such position in the menu.");
+                    Console.WriteLine("Do you want to add more sushi to your order? Type Y or N.");
                 }
             }
-            else if (customerInput0.Equals("n"))
+            else if (customerInput.Equals("n"))
             {
                 Console.WriteLine("Thank you!");
                 break;
@@ -66,6 +68,7 @@ public class Bot
             else
             {
                 Console.WriteLine("No such option.");
+                Console.WriteLine("Do you want to add more sushi to your order? Type Y or N.");
             }
         } while (true);
     }
@@ -76,7 +79,7 @@ public class Bot
         int counter = 1;
         foreach (var item in _order.CartWithSushi)
         {
-            Console.WriteLine($"{counter}. {item} was added to the cart");
+            Console.WriteLine($"{counter}. {item} in your Cart.");
             totalPrice += item.Price;
             counter++;
         }
@@ -187,21 +190,26 @@ public class Bot
     {
         if (_isPaid.Equals(true))
         {
-            Console.WriteLine(
-                $"Dear {_customer.Name} {_customer.Surname}, your order: is going to be delivered to {_customer.Address} in 2 hours. " +
-                $"\n{_order.CartWithSushi}");
+            Console.Write(
+                $"Dear {_customer.Name} {_customer.Surname}, your order: is going to be delivered to {_customer.Address} in 2 hours. \nOrder: ");
+            foreach (var item in _order.CartWithSushi)
+            {
+                Console.WriteLine(item);
+            }
         }
     }
 
     private void ShowMenu()
     {
         Console.WriteLine("Today in the menu:");
-        _sushiDish = ParseMenuFromJson();
-
-        for (int j = 0; j < _sushiDish.Count; j++)
+        _sushiMenu = ParseMenuFromJson();
+        _console = new ConsoleViewController();
+        for (int j = 0; j < _sushiMenu.Count; j++)
         {
-            Console.WriteLine($"{j + 1}. " + _sushiDish[j]);
+            _console.AddItemToTable(_sushiMenu[j].ToString(), j + 1);
         }
+
+        _console.PrintTableToConsole();
     }
 
     private List<Sushi> ParseMenuFromJson()
