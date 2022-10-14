@@ -1,5 +1,6 @@
 using System.Globalization;
 using Newtonsoft.Json;
+using Spectre.Console;
 
 namespace SushiShop;
 
@@ -10,6 +11,8 @@ public class Bot
     private Order _order;
     private bool _isPaid;
     private ConsoleViewController _console;
+    private string _tastySmile = ":face_savoring_food:";
+    private string _sushi = ":sushi:";
 
     public Bot()
     {
@@ -19,48 +22,52 @@ public class Bot
 
     public void SayHelloToCustomer()
     {
-        Console.WriteLine(
-            "Hello, dear! You are in small sushi-market. The best sushi in the world! Please, choose, buy and enjoy!");
+        _console = new ConsoleViewController();
+        AnsiConsole.Write(new Markup(
+            $"[steelblue1]Hello, dear! " +
+            $"You are in small sushi-market. The best sushi in the world! {_sushi} " +
+            $"Please, choose, buy and enjoy {_tastySmile}![/]\n"));
         _customer.AmountOfMoney = 220;
     }
 
     public void AskCustomerWhatAddToCart()
     {
         int counter = 0;
-        Console.WriteLine("Do you want to make an order of sushi add it to cart? Type Y or N.");
+        AnsiConsole.Write(new Markup("[yellow]Do you want to make an order of sushi?[/]\n"));
         do
         {
             if (counter > 0)
             {
-                Console.WriteLine("Do you want to add more sushi to your order? Type Y or N.");
+                Console.WriteLine("Do you want to add more sushi to your order?\n");
             }
 
-            string customerInput = Console.ReadLine()?.ToLower()!;
-            if (customerInput.Equals("y"))
+            string customerInput = _console.DisplayMakeChoice("Choose Yes or No", new[] { "Yes", "No" });
+            if (customerInput.Equals("yes"))
             {
                 ShowMenu();
-                Console.WriteLine("What position do you want to order? Type number from the menu above. ");
-                customerInput = Console.ReadLine()!;
+                Console.WriteLine("What position do you want to order? ");
+                customerInput = _console.DisplayMakeChoice("Choose number from the menu above", _sushiMenu);
                 try
                 {
-                    int position = int.Parse(customerInput, NumberStyles.Integer);
-
                     for (int i = 0; i < _sushiMenu.Count; i++)
                     {
-                        _order.CartWithSushi.Add(_sushiMenu[position - 1]);
-                        Console.WriteLine($"Position #{position} '{_sushiMenu[position - 1]}' was added to Cart.");
-                        break;
+                        if (_sushiMenu[i].ToString().Equals(customerInput))
+                        {
+                            _order.CartWithSushi.Add(_sushiMenu[i]);
+                        }
                     }
+
+                    Console.WriteLine($"'{customerInput}' was added to Cart.");
 
                     counter++;
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("We don't have such position in the menu.");
-                    Console.WriteLine("Do you want to add more sushi to your order? Type Y or N.");
+                    Console.WriteLine("Do you want to add more sushi to your order? ");
                 }
             }
-            else if (customerInput.Equals("n"))
+            else if (customerInput.Equals("no"))
             {
                 Console.WriteLine("Thank you!");
                 break;
@@ -68,7 +75,7 @@ public class Bot
             else
             {
                 Console.WriteLine("No such option.");
-                Console.WriteLine("Do you want to add more sushi to your order? Type Y or N.");
+                Console.WriteLine("Do you want to add sushi to your order?");
             }
         } while (true);
     }
@@ -84,12 +91,7 @@ public class Bot
             counter++;
         }
 
-        if (totalPrice == 0)
-        {
-            Console.WriteLine("Your cart is empty! You have nothing to pay for.");
-        }
-
-        else
+        if (totalPrice != 0)
         {
             Console.WriteLine($"Total price: {totalPrice}");
         }
@@ -203,7 +205,6 @@ public class Bot
     {
         Console.WriteLine("Today in the menu:");
         _sushiMenu = ParseMenuFromJson();
-        _console = new ConsoleViewController();
         for (int j = 0; j < _sushiMenu.Count; j++)
         {
             _console.AddItemToTable(_sushiMenu[j].ToString(), j + 1);
