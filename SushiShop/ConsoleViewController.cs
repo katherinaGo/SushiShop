@@ -5,13 +5,16 @@ namespace SushiShop;
 public class ConsoleViewController
 {
     private static Table? _table;
+    private string _sushiSmile = ":sushi:";
 
     public ConsoleViewController()
     {
         _table = new Table();
         _table.Title("[blue]MENU[/]");
         _table.AddColumn("#");
-        _table.AddColumn(new TableColumn("Sushi").LeftAligned());
+        _table.AddColumn(
+            new TableColumn($"{_sushiSmile}{_sushiSmile}{_sushiSmile} Sushi {_sushiSmile}{_sushiSmile}{_sushiSmile} ")
+                .LeftAligned());
     }
 
     public void AddItemToTable(string value, int counter)
@@ -39,7 +42,7 @@ public class ConsoleViewController
     {
         var customerInput = AnsiConsole.Prompt(new SelectionPrompt<string>()
             .Title(title)
-            .AddChoices(new[] { variants[0], variants[1] })).ToLower();
+            .AddChoices(variants)).ToLower();
         return customerInput;
     }
 
