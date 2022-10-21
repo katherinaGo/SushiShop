@@ -2,38 +2,45 @@
   "sushi": [
     {
       "name": "philadelphia",
-      "amount": 1,
-      "price": 2
+      "amountInPortion": 1,
+      "price": 2,
+      "availableForSell": 50
     },
     {
-      "name": "philadelphia",
-      "amount": 8,
-      "price": 11
+      "name": "philadelphia small set",
+      "amountInPortion": 8,
+      "price": 11,
+      "availableForSell": 3
     },
     {
       "name": "umaki",
-      "amount": 8,
-      "price": 5
+      "amountInPortion": 8,
+      "price": 5,
+      "availableForSell": 22
     },
     {
       "name": "satoshi",
-      "amount": 8,
-      "price": 15
+      "amountInPortion": 8,
+      "price": 15,
+      "availableForSell": 0
     },
     {
       "name": "yatumaki",
-      "amount": 8,
-      "price": 15
+      "amountInPortion": 8,
+      "price": 15,
+      "availableForSell": 23
     },
     {
-      "name": "set classic with philadelphia&umaki",
-      "amount": 24,
-      "price": 30
+      "name": "set classic with philadelphia & umaki",
+      "amountInPortion": 24,
+      "price": 30,
+      "availableForSell": 10
     },
     {
-      "name": "set #2 with yatumaki&satoshi",
-      "amount": 28,
-      "price": 45
+      "name": "set #2 with yatumaki & satoshi",
+      "amountInPortion": 28,
+      "price": 45,
+      "availableForSell": 22
     }
   ]
 }
