@@ -1,8 +1,8 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace SushiShop;
 
 public class Food
 {
-    [JsonPropertyName("sushi")] public List<Sushi> Sushi { get; set; }
+    [JsonProperty("sushi")] public List<Sushi> Sushi { get; set; }
 }

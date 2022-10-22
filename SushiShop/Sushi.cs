@@ -1,18 +1,22 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace SushiShop;
 
 public class Sushi : Food
 {
-    [JsonPropertyName("name")] public string Name { get; set; }
+    [JsonProperty("name")] public string Name { get; set; }
 
-    [JsonPropertyName("amount")] public int Amount { get; set; }
+    [JsonProperty("amountInPortion")] public int AmountInPortion { get; set; }
 
-    [JsonPropertyName("price")] public int Price { get; set; }
+    [JsonProperty("price")] public int Price { get; set; }
+
+    [JsonProperty("availableForSell")] public int AvailableAmountForSell { get; set; }
+
+    [JsonIgnore] public int NumberItemWasOrdered { get; set; }
 
 
     public override string ToString()
     {
-        return $"Sushi {Name}, {Amount} items for {Price}€";
+        return $"Sushi {Name}, {AmountInPortion} items for {Price}€";
     }
 }

@@ -9,56 +9,68 @@ public class Bot
     private List<Sushi> _sushiMenu;
     private Order _order;
     private bool _isPaid;
+    private int _amountToOrder;
     private ConsoleViewController _console;
-    private string _tastySmile = ":face_savoring_food:";
-    private string _sushiSmile = ":sushi:";
+    private const string TastySmile = ":face_savoring_food:";
+    private const string SushiSmile = ":sushi:";
+    private const string MenuPathFile = "/Users/kate/RiderProjects/SushiShop/SushiShop/menu.json";
 
     public Bot()
     {
         _customer = new Customer();
         _order = new Order();
         _console = new ConsoleViewController();
+        _sushiMenu = ParseMenuFromJson();
     }
 
     public void SayHelloToCustomer()
     {
         AnsiConsole.Write(new Markup(
             $"[steelblue1]Hello, [bold]dear[/]! " +
-            $"You are in small sushi-market. The best sushi in the world! {_sushiSmile} " +
-            $"Please, choose, buy and enjoy {_tastySmile}![/]\n"));
+            $"You are in small sushi-market. The best sushi in the world! {SushiSmile} " +
+            $"Choose, buy and enjoy {TastySmile}![/]\n"));
         _customer.AmountOfMoney = 220;
     }
 
     public void AskCustomerWhatAddToCart()
     {
-        int counter = 0;
+        int counterOfAddedItemsToCart = 0;
         AnsiConsole.Write(new Markup("[yellow]Do you want to make an order of sushi?[/]\n"));
         do
         {
-            if (counter > 0)
+            if (counterOfAddedItemsToCart > 0)
             {
                 AnsiConsole.Write(
-                    new Markup($"[yellow]Do you want to add more sushi {_sushiSmile} to your order?[/]\n"));
+                    new Markup($"[yellow]Do you want to add another set of sushi {SushiSmile} to your order?[/]\n"));
             }
 
             string customerInput =
-                _console.DisplayMakeChoice("Choose [purple]Yes[/] or [orange1]No[/]", new[] { "Yes", "No" });
+                _console.DisplayMakeChoice("Choose [steelblue1]Yes[/] or [orange1]No[/]",
+                    new[] { "Yes", "No" });
             if (customerInput.Equals("yes"))
             {
                 ShowMenu();
                 customerInput =
-                    _console.DisplayMakeChoice("[steelblue1]Choose position from the menu below.[/]", _sushiMenu);
+                    _console.DisplayMakeChoice("[steelblue1]Choose position from the menu below.[/]",
+                        _sushiMenu);
 
-                for (int i = 0; i < _sushiMenu.Count; i++)
+                bool isAvailableToAdd = AskCustomerHowMuchPositionsToOrder(customerInput);
+                if (isAvailableToAdd.Equals(true))
                 {
-                    if (_sushiMenu[i].ToString().Equals(customerInput))
+                    for (int i = 0; i < _sushiMenu.Count; i++)
                     {
-                        _order.CartWithSushi.Add(_sushiMenu[i]);
+                        if (_sushiMenu[i].ToString().Equals(customerInput))
+                        {
+                            _order.CartWithSushi.Add(_sushiMenu[i]);
+                            _sushiMenu[i].AvailableAmountForSell -= _amountToOrder;
+                            _sushiMenu[i].NumberItemWasOrdered = _amountToOrder;
+                        }
                     }
-                }
 
-                AnsiConsole.Write(new Markup($"[steelblue1]'{customerInput}' was added to Cart.[/]\n"));
-                counter++;
+                    AnsiConsole.Write(
+                        new Markup($"[steelblue1]{_amountToOrder} '{customerInput}' added to Cart.[/]\n"));
+                    counterOfAddedItemsToCart++;
+                }
             }
             else if (customerInput.Equals("no"))
             {
@@ -74,9 +86,10 @@ public class Bot
         int counter = 1;
         foreach (var item in _order.CartWithSushi)
         {
-            AnsiConsole.Write(new Markup($"[steelblue1]{counter}. {item} in your Cart.[/]\n"));
+            AnsiConsole.Write(new Markup(
+                $"[steelblue1]{counter}. {item}, {item.NumberItemWasOrdered} item(s) in your Cart.[/]\n"));
 
-            totalPrice += item.Price;
+            totalPrice += item.Price * item.NumberItemWasOrdered;
             counter++;
         }
 
@@ -105,7 +118,8 @@ public class Bot
                 {
                     AnsiConsole.Write(new Markup($"[yellow]Was the name typed correctly?[/]\n"));
                     customerInput =
-                        _console.DisplayMakeChoice("Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.",
+                        _console.DisplayMakeChoice(
+                            "Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.",
                             new[] { "Yes", "No" });
 
                     if (customerInput.Equals("yes"))
@@ -210,18 +224,20 @@ public class Bot
         {
             AnsiConsole.Write(new Markup(
                 $"[steelblue1]Dear [bold]{_customer.Name} {_customer.Surname}[/], " +
-                $"your order: is going to be delivered to [bold]{_customer.Address}[/] in 2 hours. \nOrder:\n [/]"));
+                $"your order: is going to be delivered to [bold]{_customer.Address}[/] in 2 hours. \nOrder:[/]\n"));
             foreach (var item in _order.CartWithSushi)
             {
                 AnsiConsole.Write(new Markup($"[steelblue1]{item}[/]\n"));
             }
+
+            // TODO update menu.json file to rewrite 'availableForSell' value
         }
     }
 
     private void ShowMenu()
     {
+        _console = new ConsoleViewController();
         AnsiConsole.Write(new Markup("[steelblue1]Today in the menu:[/]\n"));
-        _sushiMenu = ParseMenuFromJson();
         for (int j = 0; j < _sushiMenu.Count; j++)
         {
             _console.AddItemToTable(_sushiMenu[j].ToString(), j + 1);
@@ -230,11 +246,54 @@ public class Bot
         _console.PrintTableToConsole();
     }
 
+    private bool AskCustomerHowMuchPositionsToOrder(string itemToOrder)
+    {
+        do
+        {
+            AnsiConsole.Write(
+                new Markup("[yellow]How many items of this position do you want to add? Type number.[/]\n"));
+
+            string customerInput = Console.ReadLine()!;
+            if (int.TryParse(customerInput, out _amountToOrder).Equals(true))
+            {
+                for (int i = 0; i < _sushiMenu.Count; i++)
+                {
+                    if (_sushiMenu[i].ToString().Equals(itemToOrder) &&
+                        _sushiMenu[i].AvailableAmountForSell < _amountToOrder)
+                    {
+                        AnsiConsole.Write(new Markup(
+                            $"[steelblue1]We don't have so many item. " +
+                            $"Available: {_sushiMenu[i].AvailableAmountForSell} items(s) of {_sushiMenu[i].Name}.[/]\n"));
+                        return false;
+                    }
+
+                    if (_sushiMenu[i].ToString().Equals(itemToOrder) &&
+                        _sushiMenu[i].AvailableAmountForSell >= _amountToOrder)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                AnsiConsole.Write(new Markup("It's not a number. Try again."));
+            }
+        } while (true);
+    }
+
     private List<Sushi> ParseMenuFromJson()
     {
-        string jsonMenu = File.ReadAllText("/Users/kate/RiderProjects/SushiShop/SushiShop/menu.json");
+        string jsonMenu = File.ReadAllText(MenuPathFile);
         Food? collection = JsonConvert.DeserializeObject<Food>(jsonMenu);
         List<Sushi> sushiDish = collection?.Sushi!;
+        for (int i = 0; i < sushiDish.Count; i++)
+        {
+            if (sushiDish[i].AvailableAmountForSell == 0)
+            {
+                sushiDish.Remove(sushiDish[i]);
+            }
+        }
+
         return sushiDish;
     }
 

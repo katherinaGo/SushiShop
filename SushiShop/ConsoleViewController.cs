@@ -5,7 +5,7 @@ namespace SushiShop;
 public class ConsoleViewController
 {
     private static Table? _table;
-    private string _sushiSmile = ":sushi:";
+    private const string SushiSmile = ":sushi:";
 
     public ConsoleViewController()
     {
@@ -13,7 +13,7 @@ public class ConsoleViewController
         _table.Title("[blue]MENU[/]");
         _table.AddColumn("#");
         _table.AddColumn(
-            new TableColumn($"{_sushiSmile}{_sushiSmile}{_sushiSmile} Sushi {_sushiSmile}{_sushiSmile}{_sushiSmile} ")
+            new TableColumn($"{SushiSmile}{SushiSmile}{SushiSmile} Sushi {SushiSmile}{SushiSmile}{SushiSmile} ")
                 .LeftAligned());
     }
 
@@ -28,16 +28,6 @@ public class ConsoleViewController
         AnsiConsole.Write(_table!);
     }
 
-    public void DisplayLoader()
-    {
-        AnsiConsole.Status()
-            .Spinner(Spinner.Known.Star)
-            .Start("Processing...", ctx =>
-            {
-                // Omitted
-            });
-    }
-
     public string DisplayMakeChoice(string title, string[] variants)
     {
         var customerInput = AnsiConsole.Prompt(new SelectionPrompt<string>()
@@ -46,16 +36,15 @@ public class ConsoleViewController
         return customerInput;
     }
 
-    public string DisplayMakeChoice(string title, List<Sushi> _sushi)
+    public string DisplayMakeChoice(string title, List<Sushi> sushi)
     {
-        string customerInput = "";
-        string[] sushiList = new string[_sushi.Count];
-        for (int i = 0; i < _sushi.Count; i++)
+        string[] sushiList = new string[sushi.Count];
+        for (int i = 0; i < sushi.Count; i++)
         {
-            sushiList[i] = $"Sushi {_sushi[i].Name}, {_sushi[i].Amount} items for {_sushi[i].Price}€";
+            sushiList[i] = $"Sushi {sushi[i].Name}, {sushi[i].AmountInPortion} items for {sushi[i].Price}€";
         }
 
-        customerInput = AnsiConsole.Prompt(new SelectionPrompt<string>()
+        string customerInput = AnsiConsole.Prompt(new SelectionPrompt<string>()
             .Title(title)
             .AddChoices(sushiList));
         return customerInput;
