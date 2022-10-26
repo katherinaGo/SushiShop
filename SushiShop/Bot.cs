@@ -17,7 +17,10 @@ public class Bot
 
     public Bot()
     {
-        _customer = new Customer();
+        _customer = new Customer
+        {
+            AmountOfMoney = 220
+        };
         _order = new Order();
         _console = new ConsoleViewController();
         _sushiMenu = ParseMenuFromJson();
@@ -29,20 +32,15 @@ public class Bot
             $"[steelblue1]Hello, [bold]dear[/]! " +
             $"You are in small sushi-market. The best sushi in the world! {SushiSmile} " +
             $"Choose, buy and enjoy {TastySmile}![/]\n"));
-        _customer.AmountOfMoney = 220;
     }
 
-    public void AskCustomerWhatAddToCart()
+    public void AskCustomerIfAddItemsToCart()
     {
-        int counterOfAddedItemsToCart = 0;
         AnsiConsole.Write(new Markup("[yellow]Do you want to make an order of sushi?[/]\n"));
         do
         {
-            if (counterOfAddedItemsToCart > 0)
-            {
-                AnsiConsole.Write(
-                    new Markup($"[yellow]Do you want to add another set of sushi {SushiSmile} to your order?[/]\n"));
-            }
+            AnsiConsole.Write(
+                new Markup($"[yellow]Do you want to add sushi {SushiSmile} to your order?[/]\n"));
 
             string customerInput =
                 _console.DisplayMakeChoice("Choose [steelblue1]Yes[/] or [orange1]No[/]",
@@ -68,8 +66,7 @@ public class Bot
                     }
 
                     AnsiConsole.Write(
-                        new Markup($"[steelblue1]{_amountToOrder} '{customerInput}' added to Cart.[/]\n"));
-                    counterOfAddedItemsToCart++;
+                        new Markup($"[steelblue1]{_amountToOrder} of '{customerInput}' added to Cart.[/]\n"));
                 }
             }
             else if (customerInput.Equals("no"))
@@ -80,14 +77,14 @@ public class Bot
         } while (true);
     }
 
-    public void ShowCustomerItemsInCart()
+    public void ShowCustomerCart()
     {
         int totalPrice = 0;
         int counter = 1;
         foreach (var item in _order.CartWithSushi)
         {
             AnsiConsole.Write(new Markup(
-                $"[steelblue1]{counter}. {item}, {item.NumberItemWasOrdered} item(s) in your Cart.[/]\n"));
+                $"[steelblue1]{counter}. {item}, {item.NumberItemWasOrdered} position(s) in your Cart.[/]\n"));
 
             totalPrice += item.Price * item.NumberItemWasOrdered;
             counter++;
@@ -101,81 +98,13 @@ public class Bot
         _order.TotalOrderPrice = totalPrice;
     }
 
-    public void AskCustomerForNameAndAddressForOrder()
+    public void AskCustomerBillingInfo()
     {
         if (_order.CartWithSushi.Count != 0)
         {
-            string customerInput;
-            do
-            {
-                _customer.Name = AskCustomerName();
-                if (string.IsNullOrWhiteSpace(_customer.Name))
-                {
-                    AnsiConsole.Write(
-                        new Markup("[red]Field can't be empty.[/]\n"));
-                }
-                else
-                {
-                    AnsiConsole.Write(new Markup($"[yellow]Was the name typed correctly?[/]\n"));
-                    customerInput =
-                        _console.DisplayMakeChoice(
-                            "Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.",
-                            new[] { "Yes", "No" });
-
-                    if (customerInput.Equals("yes"))
-                    {
-                        AnsiConsole.Write(new Markup("[steelblue1]OK, saved.[/]\n"));
-                        break;
-                    }
-                }
-            } while (true);
-
-            do
-            {
-                _customer.Surname = AskCustomerSurname();
-                if (string.IsNullOrWhiteSpace(_customer.Surname))
-                {
-                    AnsiConsole.Write(new Markup($"[red]Field can't be empty.[/]\n"));
-                }
-                else
-                {
-                    AnsiConsole.Write(new Markup("[yellow]Was the surname typed correctly?[/]\n"));
-
-                    customerInput =
-                        _console.DisplayMakeChoice(
-                            "[steelblue1]Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.[/]",
-                            new[] { "Yes", "No" });
-
-                    if (customerInput.Equals("yes"))
-                    {
-                        AnsiConsole.Write(new Markup("[steelblue1]OK, saved.[/]\n"));
-                        break;
-                    }
-                }
-            } while (true);
-
-            do
-            {
-                _customer.Address = AskCustomerAddress();
-                if (string.IsNullOrWhiteSpace(_customer.Address))
-                {
-                    AnsiConsole.Write(new Markup("[red]Field can't be empty.[/]\n"));
-                }
-                else
-                {
-                    AnsiConsole.Write(new Markup("[yellow]Was the address typed correctly?[/]"));
-                    customerInput =
-                        _console.DisplayMakeChoice(
-                            "[steelblue1]Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.[/]",
-                            new[] { "Yes", "No" });
-
-                    if (customerInput.Equals("yes"))
-                    {
-                        AnsiConsole.Write(new Markup("[steelblue1]OK, saved.[/]\n"));
-                        break;
-                    }
-                }
-            } while (true);
+            AskCustomerName();
+            AskCustomerSurname();
+            AskCustomerAddress();
 
             AnsiConsole.Write(
                 new Markup(
@@ -206,8 +135,9 @@ public class Bot
                 {
                     AnsiConsole.Write(new Markup("[steelblue1]Getting your money...[/]"));
                     _customer.AmountOfMoney -= _order.TotalOrderPrice;
+                    Thread.Sleep(3500);
                     AnsiConsole.Write(new Markup(
-                        $"[steelblue1]Successfully paid. Your current balance:  [bold]{_customer.AmountOfMoney}€[/].[/]\n"));
+                        $"[steelblue1]Successfully paid. Your current balance: [bold]{_customer.AmountOfMoney}€[/].[/]\n"));
                     _isPaid = true;
                 }
             }
@@ -224,10 +154,10 @@ public class Bot
         {
             AnsiConsole.Write(new Markup(
                 $"[steelblue1]Dear [bold]{_customer.Name} {_customer.Surname}[/], " +
-                $"your order: is going to be delivered to [bold]{_customer.Address}[/] in 2 hours. \nOrder:[/]\n"));
+                $"your order is going to be delivered to [bold]{_customer.Address}[/] in 2 hours. \nOrder:[/]\n"));
             foreach (var item in _order.CartWithSushi)
             {
-                AnsiConsole.Write(new Markup($"[steelblue1]{item}[/]\n"));
+                AnsiConsole.Write(new Markup($"[steelblue1]'{item}' - {item.NumberItemWasOrdered} position(s)[/]\n"));
             }
 
             // TODO update menu.json file to rewrite 'availableForSell' value
@@ -252,7 +182,6 @@ public class Bot
         {
             AnsiConsole.Write(
                 new Markup("[yellow]How many items of this position do you want to add? Type number.[/]\n"));
-
             string customerInput = Console.ReadLine()!;
             if (int.TryParse(customerInput, out _amountToOrder).Equals(true))
             {
@@ -276,7 +205,7 @@ public class Bot
             }
             else
             {
-                AnsiConsole.Write(new Markup("It's not a number. Try again."));
+                AnsiConsole.Write(new Markup("It's not a number. Try again.\n"));
             }
         } while (true);
     }
@@ -297,64 +226,111 @@ public class Bot
         return sushiDish;
     }
 
-    private string AskCustomerName()
+    private void UpdateMenu(List<Sushi> sushi)
     {
-        AnsiConsole.Write(new Markup("[steelblue1]Tell us your name, please...[/]\n"));
-        try
-        {
-            _customer.Name = Console.ReadLine()!;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            Console.WriteLine(e.StackTrace);
-        }
-
-        return _customer.Name!;
+        string json = JsonConvert.SerializeObject(sushi);
+        File.WriteAllText(MenuPathFile, json);
     }
 
-    private string AskCustomerSurname()
+    private void AskCustomerName()
     {
-        AnsiConsole.Write(new Markup("[steelblue1]Tell us your surname, please...[/]\n"));
-
-        try
+        string customerInput;
+        do
         {
-            _customer.Surname = Console.ReadLine()!;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            Console.WriteLine(e.StackTrace);
-        }
+            AnsiConsole.Write(new Markup("[steelblue1]Tell us your name, please...[/]\n"));
 
-        return _customer.Surname!;
+            customerInput = Console.ReadLine()!;
+            _customer.Name = customerInput;
+
+            if (string.IsNullOrWhiteSpace(_customer.Name))
+            {
+                AnsiConsole.Write(
+                    new Markup("[red]Field can't be empty.[/]\n"));
+            }
+            else
+            {
+                AnsiConsole.Write(new Markup($"[yellow]Was the name typed correctly?[/]\n"));
+                customerInput =
+                    _console.DisplayMakeChoice(
+                        "Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.",
+                        new[] { "Yes", "No" });
+
+                if (customerInput.Equals("yes"))
+                {
+                    AnsiConsole.Write(new Markup("[steelblue1]OK, saved.[/]\n"));
+                    break;
+                }
+            }
+        } while (true);
     }
 
-    private string AskCustomerAddress()
+
+    private void AskCustomerSurname()
     {
-        AnsiConsole.Write(new Markup(
-            "[steelblue1]Tell us your address for delivery in format [italic]'Street, # of house, # of flat'[/].[/]\n"));
-
-        try
+        string customerInput;
+        do
         {
-            _customer.Address = Console.ReadLine()!;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            Console.WriteLine(e.StackTrace);
-        }
+            AnsiConsole.Write(new Markup("[steelblue1]Tell us your surname, please...[/]\n"));
 
-        return _customer.Address!;
+            customerInput = Console.ReadLine()!;
+            _customer.Surname = customerInput;
+
+            if (string.IsNullOrWhiteSpace(_customer.Surname))
+            {
+                AnsiConsole.Write(new Markup($"[red]Field can't be empty.[/]\n"));
+            }
+            else
+            {
+                AnsiConsole.Write(new Markup("[yellow]Was the surname typed correctly?[/]\n"));
+
+                customerInput =
+                    _console.DisplayMakeChoice(
+                        "[steelblue1]Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.[/]",
+                        new[] { "Yes", "No" });
+
+                if (customerInput.Equals("yes"))
+                {
+                    AnsiConsole.Write(new Markup("[steelblue1]OK, saved.[/]\n"));
+                    break;
+                }
+            }
+        } while (true);
+    }
+
+    private void AskCustomerAddress()
+    {
+        string customerInput;
+        do
+        {
+            AnsiConsole.Write(new Markup(
+                "[steelblue1]Tell us your address for delivery in format [italic]'Street, # of house, # of flat'[/].[/]\n"));
+
+            customerInput = Console.ReadLine()!;
+            _customer.Address = customerInput;
+
+            if (string.IsNullOrWhiteSpace(_customer.Address))
+            {
+                AnsiConsole.Write(new Markup("[red]Field can't be empty.[/]\n"));
+            }
+            else
+            {
+                AnsiConsole.Write(new Markup("[yellow]Was the address typed correctly?[/]"));
+                customerInput =
+                    _console.DisplayMakeChoice(
+                        "[steelblue1]Choose [purple]Yes[/] for confirming or [orange1]No[/] to change.[/]",
+                        new[] { "Yes", "No" });
+
+                if (customerInput.Equals("yes"))
+                {
+                    AnsiConsole.Write(new Markup("[steelblue1]OK, saved.[/]\n"));
+                    break;
+                }
+            }
+        } while (true);
     }
 
     private bool CheckIfCustomerHaveEnoughMoneyToPay()
     {
-        if (_customer.AmountOfMoney >= _order.TotalOrderPrice)
-        {
-            return true;
-        }
-
-        return false;
+        return _customer.AmountOfMoney >= _order.TotalOrderPrice;
     }
 }
