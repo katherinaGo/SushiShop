@@ -17,18 +17,19 @@ public class ConsoleViewController
                 .LeftAligned());
     }
 
-    public void AddItemToTable(string value, int counter)
+    public static void AddItemToTable(string value, int counter)
     {
         _table?.AddRow($"[blue]{counter}[/]", $"[white]{value}[/]");
         _table?.Border(TableBorder.Rounded);
     }
 
-    public void PrintTableToConsole()
+    public static void PrintTableToConsole()
     {
         AnsiConsole.Write(_table!);
+        _table?.Rows.Clear();
     }
 
-    public string DisplayMakeChoice(string title, string[] variants)
+    public static string? DisplayMakeChoice(string title, string[] variants)
     {
         var customerInput = AnsiConsole.Prompt(new SelectionPrompt<string>()
             .Title(title)
@@ -36,15 +37,15 @@ public class ConsoleViewController
         return customerInput;
     }
 
-    public string DisplayMakeChoice(string title, List<Sushi> sushi)
+    public static string? DisplayMakeChoice(string title, List<Sushi> sushi)
     {
-        string[] sushiList = new string[sushi.Count];
-        for (int i = 0; i < sushi.Count; i++)
+        var sushiList = new string[sushi.Count];
+        for (var i = 0; i < sushi.Count; i++)
         {
             sushiList[i] = $"Sushi {sushi[i].Name}, {sushi[i].AmountInPortion} items for {sushi[i].Price}€";
         }
 
-        string customerInput = AnsiConsole.Prompt(new SelectionPrompt<string>()
+        var customerInput = AnsiConsole.Prompt(new SelectionPrompt<string>()
             .Title(title)
             .AddChoices(sushiList));
         return customerInput;

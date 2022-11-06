@@ -1,6 +1,6 @@
 ﻿using SushiShop;
 
-Bot bot = new Bot();
+var bot = new Bot();
 bot.SayHelloToCustomer();
 bot.AskCustomerIfAddItemsToCart();
 bot.ShowCustomerCart();

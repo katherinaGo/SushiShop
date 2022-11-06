@@ -4,7 +4,7 @@ namespace SushiShop;
 
 public class Sushi : Food
 {
-    [JsonProperty("name")] public string Name { get; set; }
+    [JsonProperty("name")] public string? Name { get; set; }
 
     [JsonProperty("amountInPortion")] public int AmountInPortion { get; set; }
 
@@ -13,7 +13,6 @@ public class Sushi : Food
     [JsonProperty("availableForSell")] public int AvailableAmountForSell { get; set; }
 
     [JsonIgnore] public int NumberItemWasOrdered { get; set; }
-
 
     public override string ToString()
     {
