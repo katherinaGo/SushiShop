@@ -3,6 +3,10 @@ using Spectre.Console;
 
 namespace SushiShop;
 
+public delegate void AccountHandler();
+
+public delegate void CartHandler();
+
 public class Bot
 {
     private readonly Customer? _customer;
@@ -12,6 +16,8 @@ public class Bot
     private int _amountToOrder;
     private readonly ConsoleViewController _console;
     private const string MenuPathFile = "/Users/kate/RiderProjects/SushiShop/SushiShop/menu.json";
+    private event AccountHandler TakeCustomerMoney;
+    private event CartHandler ItemsInCart;
 
     public Bot()
     {
@@ -22,6 +28,8 @@ public class Bot
         _order = new Order();
         _console = new ConsoleViewController();
         _sushiMenu = ParseMenuFromJson();
+        TakeCustomerMoney = PayForOrder;
+        ItemsInCart = ShowCustomerCart;
     }
 
     private static List<Sushi> ParseMenuFromJson()
@@ -51,7 +59,7 @@ public class Bot
         ConsoleViewController.PrintTableToConsole();
     }
 
-    private bool AskCustomerHowMuchPositionsToOrder(string? itemToOrder)
+    private bool IsPossibleAddPositionsToCart(string? itemToOrder)
     {
         do
         {
@@ -187,6 +195,16 @@ public class Bot
         File.WriteAllText(MenuPathFile, json);
     }
 
+    private void PayForOrder()
+    {
+        AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.LoaderToGetMoney)));
+        _customer!.AmountOfMoney -= _order.TotalOrderPrice;
+        Thread.Sleep(3500);
+        AnsiConsole.Write(new Markup(
+            TextStrings.GetString(Keys.CurrentBalanceInfo, _customer)));
+        _isPaid = true;
+    }
+    
     public void SayHelloToCustomer()
     {
         AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SayHello)));
@@ -210,8 +228,7 @@ public class Bot
                         TextStrings.GetString(Keys.ChoosePositionFromMenu),
                         _sushiMenu);
 
-                var isAvailableToAdd = AskCustomerHowMuchPositionsToOrder(customerInput);
-                if (isAvailableToAdd)
+                if (IsPossibleAddPositionsToCart(customerInput))
                 {
                     foreach (var item in _sushiMenu.Where(item => item.ToString().Equals(customerInput)))
                     {
@@ -227,6 +244,7 @@ public class Bot
             else if (customerInput.Equals("no"))
             {
                 AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.ThankYouMessage)));
+                ItemsInCart();
                 break;
             }
         } while (true);
@@ -287,12 +305,7 @@ public class Bot
 
                 if (customerInput!.Equals("yes"))
                 {
-                    AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.LoaderToGetMoney)));
-                    _customer!.AmountOfMoney -= _order.TotalOrderPrice;
-                    Thread.Sleep(3500);
-                    AnsiConsole.Write(new Markup(
-                        TextStrings.GetString(Keys.CurrentBalanceInfo, _customer)));
-                    _isPaid = true;
+                    TakeCustomerMoney();
                 }
             }
             else
