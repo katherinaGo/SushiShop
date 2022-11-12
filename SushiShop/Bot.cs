@@ -1,9 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 using Spectre.Console;
+using SushiShop.ConsoleController;
+using SushiShop.EmailService;
+using SushiShop.Texts;
 
 namespace SushiShop;
 
-public delegate void AccountHandler();
+public delegate void AccountHandler(bool isPaid);
 
 public delegate void CartHandler();
 
@@ -14,10 +17,9 @@ public class Bot
     private readonly Order _order;
     private bool _isPaid;
     private int _amountToOrder;
-    private readonly ConsoleViewController _console;
-    private const string MenuPathFile = "/Users/kate/RiderProjects/SushiShop/SushiShop/menu.json";
     private event AccountHandler TakeCustomerMoney;
     private event CartHandler ItemsInCart;
+    private event SendEmailIfPaid SendEmailToCustomer;
 
     public Bot()
     {
@@ -26,37 +28,25 @@ public class Bot
             AmountOfMoney = 220
         };
         _order = new Order();
-        _console = new ConsoleViewController();
-        _sushiMenu = ParseMenuFromJson();
+        _sushiMenu = MenuController.ParseMenuFromJson();
         TakeCustomerMoney = PayForOrder;
         ItemsInCart = ShowCustomerCart;
+        SendEmailToCustomer = EmailSender.SendEmailWithResults;
     }
 
-    private static List<Sushi> ParseMenuFromJson()
+    public void StartProgram()
     {
-        var jsonMenu = File.ReadAllText(MenuPathFile);
-        var collection = JsonConvert.DeserializeObject<Food>(jsonMenu);
-        var sushiDish = collection?.Sushi!;
-        for (var i = 0; i < sushiDish.Count; i++)
+        SayHelloToCustomer();
+        var isItemsAdded = AskCustomerIfAddItemsToCart();
+        if (isItemsAdded)
         {
-            if (sushiDish[i].AvailableAmountForSell == 0)
+            AskCustomerBillingInfo();
+            AskCustomerToPay();
+            if (_isPaid)
             {
-                sushiDish.Remove(sushiDish[i]);
+                ShowCustomerItemsToDeliver();
             }
         }
-
-        return sushiDish;
-    }
-
-    private void ShowMenu()
-    {
-        AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TodayInMenu)));
-        for (var j = 0; j < _sushiMenu.Count; j++)
-        {
-            ConsoleViewController.AddItemToTable(_sushiMenu[j].ToString(), j + 1);
-        }
-
-        ConsoleViewController.PrintTableToConsole();
     }
 
     private bool IsPossibleAddPositionsToCart(string? itemToOrder)
@@ -184,34 +174,62 @@ public class Bot
         } while (true);
     }
 
+    private void AskCustomerEmail()
+    {
+        do
+        {
+            AnsiConsole.Write(new Markup(
+                TextStrings.GetString(Keys.TellEmail)));
+
+            var customerInput = Console.ReadLine()!;
+            _customer!.Email = customerInput;
+            var isEmail = Regex.IsMatch(_customer.Email,
+                @"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+                RegexOptions.IgnoreCase);
+            if (string.IsNullOrWhiteSpace(_customer.Email) || isEmail.Equals(false))
+            {
+                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.InvalidEmailFormat)));
+            }
+            else
+            {
+                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.WasTypedCorrectly)));
+                customerInput =
+                    ConsoleViewController.DisplayMakeChoice(
+                        TextStrings.GetString(Keys.YesOrNoChoice),
+                        new[] { "Yes", "No" });
+
+                if (customerInput!.Equals("yes"))
+                {
+                    AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SavedMessage)));
+                    break;
+                }
+            }
+        } while (true);
+    }
+
     private bool CheckIfCustomerHaveEnoughMoneyToPay()
     {
         return _customer!.AmountOfMoney >= _order.TotalOrderPrice;
     }
 
-    private void UpdateMenu(List<Sushi> sushi)
-    {
-        var json = JsonConvert.SerializeObject(sushi);
-        File.WriteAllText(MenuPathFile, json);
-    }
-
-    private void PayForOrder()
+    private void PayForOrder(bool isPaid)
     {
         AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.LoaderToGetMoney)));
         _customer!.AmountOfMoney -= _order.TotalOrderPrice;
         Thread.Sleep(3500);
         AnsiConsole.Write(new Markup(
             TextStrings.GetString(Keys.CurrentBalanceInfo, _customer)));
-        _isPaid = true;
+        _isPaid = isPaid;
     }
-    
-    public void SayHelloToCustomer()
+
+    private static void SayHelloToCustomer()
     {
         AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SayHello)));
     }
 
-    public void AskCustomerIfAddItemsToCart()
+    private bool AskCustomerIfAddItemsToCart()
     {
+        MenuController.ShowMenu(_sushiMenu);
         do
         {
             AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.AskIfAddSushiToOrder)));
@@ -222,7 +240,6 @@ public class Bot
             );
             if (customerInput!.Equals("yes"))
             {
-                ShowMenu();
                 customerInput =
                     ConsoleViewController.DisplayMakeChoice(
                         TextStrings.GetString(Keys.ChoosePositionFromMenu),
@@ -244,13 +261,20 @@ public class Bot
             else if (customerInput.Equals("no"))
             {
                 AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.ThankYouMessage)));
-                ItemsInCart();
                 break;
             }
         } while (true);
+
+        if (_order.CartWithSushi.Count != 0)
+        {
+            ItemsInCart();
+            return true;
+        }
+
+        return false;
     }
 
-    public void ShowCustomerCart()
+    private void ShowCustomerCart()
     {
         var totalPrice = 0;
         var counter = 1;
@@ -265,67 +289,53 @@ public class Bot
 
         if (totalPrice != 0)
         {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TotalPriceInfo) + $" {totalPrice} [/]\n"));
+            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TotalPriceInfo) + $" {totalPrice}€[/]\n"));
         }
 
         _order.TotalOrderPrice = totalPrice;
     }
 
-    public void AskCustomerBillingInfo()
+    private void AskCustomerBillingInfo()
     {
-        if (_order.CartWithSushi.Count != 0)
-        {
-            AskCustomerName();
-            AskCustomerSurname();
-            AskCustomerAddress();
+        AskCustomerName();
+        AskCustomerSurname();
+        AskCustomerAddress();
+        AskCustomerEmail();
 
-            AnsiConsole.Write(
-                new Markup(TextStrings.GetString(Keys.DeliveredInfo, _customer)));
-        }
-        else
-        {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.ByeMessage)));
-        }
+        AnsiConsole.Write(
+            new Markup(TextStrings.GetString(Keys.DeliveredInfo, _customer)));
     }
 
-    public void AskCustomerToPay()
+    private void AskCustomerToPay()
     {
-        if (_order.CartWithSushi.Count != 0)
+        AnsiConsole.Write(new Markup(
+            TextStrings.GetString(Keys.HowMuchToPayMessage) + $"{_order.TotalOrderPrice}€[/]"));
+        AnsiConsole.Write(new Markup(
+            TextStrings.GetString(Keys.CustomerBalanceInfo)));
+        if (CheckIfCustomerHaveEnoughMoneyToPay())
         {
-            AnsiConsole.Write(new Markup(
-                TextStrings.GetString(Keys.HowMuchToPayMessage) + $"{_order.TotalOrderPrice}€[/]"));
-            AnsiConsole.Write(new Markup(
-                TextStrings.GetString(Keys.CustomerBalanceInfo)));
-            if (CheckIfCustomerHaveEnoughMoneyToPay())
-            {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.AskToConfirmPayment)));
-                var customerInput = ConsoleViewController.DisplayMakeChoice(
-                    TextStrings.GetString(Keys.YesOrNoChoice),
-                    new[] { "Yes", "No" });
+            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.AskToConfirmPayment)));
+            var customerInput = ConsoleViewController.DisplayMakeChoice(
+                TextStrings.GetString(Keys.YesOrNoChoice),
+                new[] { "Yes", "No" });
 
-                if (customerInput!.Equals("yes"))
-                {
-                    TakeCustomerMoney();
-                }
-            }
-            else
+            if (customerInput!.Equals("yes"))
             {
-                _isPaid = false;
+                TakeCustomerMoney(true);
             }
         }
     }
 
-    public void ShowCustomerItemsToDeliver()
+    private void ShowCustomerItemsToDeliver()
     {
-        if (_isPaid)
+        AnsiConsole.Write(new Markup(
+            TextStrings.GetString(Keys.FinalDeliveredInfo, _customer)));
+        foreach (var item in _order.CartWithSushi)
         {
-            AnsiConsole.Write(new Markup(
-                TextStrings.GetString(Keys.FinalDeliveredInfo, _customer)));
-            foreach (var item in _order.CartWithSushi)
-            {
-                AnsiConsole.Write(new Markup($"[steelblue1]'{item}' - {item.NumberItemWasOrdered} position(s)[/]\n"));
-            }
-            // TODO update menu.json file to rewrite 'availableForSell' value
+            AnsiConsole.Write(new Markup($"[steelblue1]'{item}' - {item.NumberItemWasOrdered} position(s)[/]\n"));
         }
+
+        SendEmailToCustomer(_customer!);
+        // TODO update menu.json file to rewrite 'availableForSell' value
     }
 }

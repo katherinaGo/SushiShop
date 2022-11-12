@@ -1,4 +1,4 @@
-namespace SushiShop;
+namespace SushiShop.Texts;
 
 public static class TextStrings
 {
@@ -23,8 +23,7 @@ public static class TextStrings
         {
             {
                 Keys.SayHello, "[steelblue1]Hello, [bold]dear[/]! "
-                               + $"You are in small sushi-market. The best sushi in the world! {SushiSmile} "
-                               + $"Choose, buy and enjoy {TastySmile}![/]\n"
+                               + $"You are in small sushi-market. The best sushi in the world! {SushiSmile} Choose, buy and enjoy {TastySmile}![/]\n"
             },
             {
                 Keys.AskIfWantToMakeOrder, "[yellow]Do you want to make an order of sushi?[/]\n"
@@ -97,7 +96,13 @@ public static class TextStrings
                                   + "[italic]'Street, # of house, # of flat'[/].[/]\n"
             },
             {
+                Keys.TellEmail, "[steelblue1]Tell us your email, please...[/]\n"
+            },
+            {
                 Keys.EmptyFieldError, "[red]Field can't be empty.[/]\n"
+            },
+            {
+                Keys.InvalidEmailFormat, "[red]Invalid email format.[/]\n"
             },
             {
                 Keys.WasTypedCorrectly, "[yellow]Was it typed correctly?[/]\n"

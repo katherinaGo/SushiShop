@@ -1,6 +1,6 @@
 using Spectre.Console;
 
-namespace SushiShop;
+namespace SushiShop.ConsoleController;
 
 public class ConsoleViewController
 {

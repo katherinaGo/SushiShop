@@ -1,4 +1,4 @@
-namespace SushiShop;
+namespace SushiShop.Texts;
 
 public enum Keys
 {
@@ -23,7 +23,9 @@ public enum Keys
     TellName,
     TellSurname,
     TellAddress,
+    TellEmail,
     EmptyFieldError,
+    InvalidEmailFormat,
     WasTypedCorrectly,
     SavedMessage,
     CustomerBalanceInfo
