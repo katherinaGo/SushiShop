@@ -41,10 +41,9 @@ public static class TextStrings
                 Keys.TotalPriceInfo, "[steelblue1]Total order price: "
             },
             {
-                Keys.DeliveredInfo,
-                $"[steelblue1]Dear [bold]{_customer!.Name} {_customer.Surname}[/], "
-                + "your order will be delivered to the following address: "
-                + $"[bold]{_customer.Address}[/] during 1.5h after successfully payment.[/]\n"
+                Keys.DeliveredInfo, $"[steelblue1]Dear [bold]{_customer!.Name} {_customer.Surname}[/], "
+                                    + "your order will be delivered to the following address: "
+                                    + $"[bold]{_customer.Address}[/] during 1.5h after successfully payment.[/]\n"
             },
             {
                 Keys.ByeMessage, "[steelblue1]Good bye! Have a nice day![/]"
@@ -113,6 +112,9 @@ public static class TextStrings
             {
                 Keys.EmailSentToCustomer,
                 $"[steelblue1]Email with order details was sent to [bold]{_customer.Email}[/].[/]"
+            },
+            {
+                Keys.DontHaveEnoughMoney, "[red]You don't have enough money to pay for the order.[/]\n"
             }
         };
     }

@@ -29,5 +29,6 @@ public enum Keys
     WasTypedCorrectly,
     SavedMessage,
     CustomerBalanceInfo,
-    EmailSentToCustomer
+    EmailSentToCustomer,
+    DontHaveEnoughMoney
 }

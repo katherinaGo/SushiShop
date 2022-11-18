@@ -28,12 +28,17 @@ public static class MenuController
     public static void ShowMenu(List<Sushi> sushiMenu)
     {
         new ConsoleViewController();
-        AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TodayInMenu)));
+        PrintToConsole(TextStrings.GetString(Keys.TodayInMenu));
         for (var j = 0; j < sushiMenu.Count; j++)
         {
             ConsoleViewController.AddItemToTable(sushiMenu[j].ToString(), j + 1);
         }
 
         ConsoleViewController.PrintTableToConsole();
+    }
+
+    public static void PrintToConsole(string text)
+    {
+        AnsiConsole.Write(new Markup(text));
     }
 }

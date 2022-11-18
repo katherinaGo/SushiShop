@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using Spectre.Console;
 using SushiShop.ConsoleController;
 using SushiShop.EmailService;
 using SushiShop.Texts;
@@ -32,8 +31,7 @@ public class Bot
     public void StartProgram()
     {
         SayHelloToCustomer();
-        var isItemsAdded = AskCustomerIfAddItemsToCart();
-        if (isItemsAdded)
+        if (AskCustomerIfAddItemsToCart())
         {
             AskCustomerBillingInfo();
             AskCustomerToPay();
@@ -52,18 +50,15 @@ public class Bot
     {
         do
         {
-            AnsiConsole.Write(
-                new Markup(TextStrings.GetString(Keys.HowManyItemsToAdd)));
-            var customerInput = Console.ReadLine()!;
-            if (int.TryParse(customerInput, out _amountToOrder).Equals(true))
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.HowManyItemsToAdd));
+            if (int.TryParse(Console.ReadLine()!, out _amountToOrder).Equals(true))
             {
                 foreach (var item in _sushiMenu)
                 {
                     if (item.ToString().Equals(itemToOrder) && item.AvailableAmountForSell < _amountToOrder)
                     {
-                        AnsiConsole.Write(new Markup(
-                            TextStrings.GetString(Keys.DontHaveThisAmount) +
-                            $"Available: {item.AvailableAmountForSell} items(s) of {item.Name}.[/]\n"));
+                        MenuController.PrintToConsole(TextStrings.GetString(Keys.DontHaveThisAmount)
+                                                      + $"Available: {item.AvailableAmountForSell} items(s) of {item.Name}.[/]\n");
                         return false;
                     }
 
@@ -75,7 +70,7 @@ public class Bot
             }
             else
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.NotNumberError)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.NotNumberError));
             }
         } while (true);
     }
@@ -84,19 +79,18 @@ public class Bot
     {
         do
         {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TellName)));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.TellName));
 
             var customerInput = Console.ReadLine()!;
             _customer!.Name = customerInput;
 
             if (string.IsNullOrWhiteSpace(_customer.Name))
             {
-                AnsiConsole.Write(
-                    new Markup(TextStrings.GetString(Keys.EmptyFieldError)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.EmptyFieldError));
             }
             else
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.WasTypedCorrectly)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.WasTypedCorrectly));
                 customerInput =
                     ConsoleViewController.DisplayMakeChoice(
                         TextStrings.GetString(Keys.YesOrNoChoice),
@@ -104,7 +98,7 @@ public class Bot
 
                 if (customerInput!.Equals("yes"))
                 {
-                    AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SavedMessage)));
+                    MenuController.PrintToConsole(TextStrings.GetString(Keys.SavedMessage));
                     break;
                 }
             }
@@ -115,18 +109,18 @@ public class Bot
     {
         do
         {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TellSurname)));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.TellSurname));
 
             var customerInput = Console.ReadLine()!;
             _customer!.Surname = customerInput;
 
             if (string.IsNullOrWhiteSpace(_customer.Surname))
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.EmptyFieldError)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.EmptyFieldError));
             }
             else
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.WasTypedCorrectly)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.WasTypedCorrectly));
 
                 customerInput =
                     ConsoleViewController.DisplayMakeChoice(
@@ -135,7 +129,7 @@ public class Bot
 
                 if (customerInput!.Equals("yes"))
                 {
-                    AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SavedMessage)));
+                    MenuController.PrintToConsole(TextStrings.GetString(Keys.SavedMessage));
                     break;
                 }
             }
@@ -146,19 +140,18 @@ public class Bot
     {
         do
         {
-            AnsiConsole.Write(new Markup(
-                TextStrings.GetString(Keys.TellAddress)));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.TellAddress));
 
             var customerInput = Console.ReadLine()!;
             _customer!.Address = customerInput;
 
             if (string.IsNullOrWhiteSpace(_customer.Address))
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.EmptyFieldError)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.EmptyFieldError));
             }
             else
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.WasTypedCorrectly)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.WasTypedCorrectly));
                 customerInput =
                     ConsoleViewController.DisplayMakeChoice(
                         TextStrings.GetString(Keys.YesOrNoChoice),
@@ -166,7 +159,7 @@ public class Bot
 
                 if (customerInput!.Equals("yes"))
                 {
-                    AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SavedMessage)));
+                    MenuController.PrintToConsole(TextStrings.GetString(Keys.SavedMessage));
                     break;
                 }
             }
@@ -177,8 +170,7 @@ public class Bot
     {
         do
         {
-            AnsiConsole.Write(new Markup(
-                TextStrings.GetString(Keys.TellEmail)));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.TellEmail));
 
             var customerInput = Console.ReadLine()!;
             _customer!.Email = customerInput;
@@ -187,11 +179,11 @@ public class Bot
                 RegexOptions.IgnoreCase);
             if (string.IsNullOrWhiteSpace(_customer.Email) || isEmail.Equals(false))
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.InvalidEmailFormat)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.InvalidEmailFormat));
             }
             else
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.WasTypedCorrectly)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.WasTypedCorrectly));
                 customerInput =
                     ConsoleViewController.DisplayMakeChoice(
                         TextStrings.GetString(Keys.YesOrNoChoice),
@@ -199,7 +191,7 @@ public class Bot
 
                 if (customerInput!.Equals("yes"))
                 {
-                    AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SavedMessage)));
+                    MenuController.PrintToConsole(TextStrings.GetString(Keys.SavedMessage));
                     break;
                 }
             }
@@ -213,17 +205,16 @@ public class Bot
 
     private void PayForOrder()
     {
-        AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.LoaderToGetMoney)));
+        MenuController.PrintToConsole((TextStrings.GetString(Keys.LoaderToGetMoney)));
         _customer!.AmountOfMoney -= _order.TotalOrderPrice;
         Thread.Sleep(3500);
-        AnsiConsole.Write(new Markup(
-            TextStrings.GetString(Keys.CurrentBalanceInfo, _customer)));
+        MenuController.PrintToConsole(TextStrings.GetString(Keys.CurrentBalanceInfo, _customer));
         _isPaid = true;
     }
 
     private static void SayHelloToCustomer()
     {
-        AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.SayHello)));
+        MenuController.PrintToConsole(TextStrings.GetString(Keys.SayHello));
     }
 
     private bool AskCustomerIfAddItemsToCart()
@@ -231,7 +222,7 @@ public class Bot
         MenuController.ShowMenu(_sushiMenu);
         do
         {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.AskIfAddSushiToOrder)));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.AskIfAddSushiToOrder));
 
             var customerInput = ConsoleViewController.DisplayMakeChoice(
                 TextStrings.GetString(Keys.YesOrNoChoice),
@@ -254,13 +245,13 @@ public class Bot
                         ShowItemsInCart = ShowCustomerCart;
                     }
 
-                    AnsiConsole.Write(
-                        new Markup($"[steelblue1]{_amountToOrder} of '{customerInput}' added to Cart.[/]\n"));
+                    MenuController.PrintToConsole(
+                        $"[steelblue1]{_amountToOrder} of '{customerInput}' added to Cart.[/]\n");
                 }
             }
             else if (customerInput.Equals("no"))
             {
-                AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.ThankYouMessage)));
+                MenuController.PrintToConsole(TextStrings.GetString(Keys.ThankYouMessage));
                 break;
             }
         } while (true);
@@ -281,8 +272,8 @@ public class Bot
         var counter = 1;
         foreach (var item in _order.CartWithSushi)
         {
-            AnsiConsole.Write(new Markup(
-                $"[steelblue1]{counter}. {item}, {item.NumberItemWasOrdered} position(s) in your Cart.[/]\n"));
+            MenuController.PrintToConsole(
+                $"[steelblue1]{counter}. {item}, {item.NumberItemWasOrdered} position(s) in your Cart.[/]\n");
 
             totalPrice += item.Price * item.NumberItemWasOrdered;
             counter++;
@@ -290,7 +281,7 @@ public class Bot
 
         if (totalPrice != 0)
         {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TotalPriceInfo) + $" {totalPrice}€[/]\n"));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.TotalPriceInfo) + $" {totalPrice}€[/]\n");
         }
 
         _order.TotalOrderPrice = totalPrice;
@@ -303,19 +294,17 @@ public class Bot
         AskCustomerAddress();
         AskCustomerEmail();
 
-        AnsiConsole.Write(
-            new Markup(TextStrings.GetString(Keys.DeliveredInfo, _customer)));
+        MenuController.PrintToConsole(TextStrings.GetString(Keys.DeliveredInfo, _customer));
     }
 
     private void AskCustomerToPay()
     {
-        AnsiConsole.Write(new Markup(
-            TextStrings.GetString(Keys.HowMuchToPayMessage) + $"{_order.TotalOrderPrice}€[/]"));
-        AnsiConsole.Write(new Markup(
-            TextStrings.GetString(Keys.CustomerBalanceInfo)));
+        MenuController.PrintToConsole(TextStrings.GetString(Keys.HowMuchToPayMessage)
+                                      + $"{_order.TotalOrderPrice}€[/]");
+        MenuController.PrintToConsole(TextStrings.GetString(Keys.CustomerBalanceInfo));
         if (CheckIfCustomerHaveEnoughMoneyToPay())
         {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.AskToConfirmPayment)));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.AskToConfirmPayment));
             var customerInput = ConsoleViewController.DisplayMakeChoice(
                 TextStrings.GetString(Keys.YesOrNoChoice),
                 new[] { "Yes", "No" });
@@ -329,16 +318,16 @@ public class Bot
 
     private void ShowCustomerItemsToDeliver()
     {
-        AnsiConsole.Write(new Markup(
-            TextStrings.GetString(Keys.FinalDeliveredInfo, _customer)));
+        MenuController.PrintToConsole(
+            TextStrings.GetString(Keys.FinalDeliveredInfo, _customer));
         foreach (var item in _order.CartWithSushi)
         {
-            AnsiConsole.Write(new Markup($"[steelblue1]'{item}' - {item.NumberItemWasOrdered} position(s)[/]\n"));
+            MenuController.PrintToConsole($"[steelblue1]'{item}' - {item.NumberItemWasOrdered} position(s)[/]\n");
         }
 
         if (EmailSentToCustomerAfterPaying(_customer!))
         {
-            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.EmailSentToCustomer)));
+            MenuController.PrintToConsole(TextStrings.GetString(Keys.EmailSentToCustomer));
         }
 
         // TODO update menu.json file to rewrite 'availableForSell' value
