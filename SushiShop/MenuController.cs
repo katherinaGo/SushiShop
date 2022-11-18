@@ -27,7 +27,7 @@ public static class MenuController
 
     public static void ShowMenu(List<Sushi> sushiMenu)
     {
-        var consoleViewController = new ConsoleViewController();
+        new ConsoleViewController();
         AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.TodayInMenu)));
         for (var j = 0; j < sushiMenu.Count; j++)
         {

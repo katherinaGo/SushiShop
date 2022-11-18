@@ -6,10 +6,6 @@ using SushiShop.Texts;
 
 namespace SushiShop;
 
-public delegate void AccountHandler(bool isPaid);
-
-public delegate void CartHandler();
-
 public class Bot
 {
     private readonly Customer? _customer;
@@ -17,9 +13,9 @@ public class Bot
     private readonly Order _order;
     private bool _isPaid;
     private int _amountToOrder;
-    private event AccountHandler TakeCustomerMoney;
-    private event CartHandler ItemsInCart;
-    private event SendEmailIfPaid SendEmailToCustomer;
+    private event Action TakenCustomerMoney;
+    private event Action? ShowItemsInCart;
+    private event Func<Customer, bool> EmailSentToCustomerAfterPaying;
 
     public Bot()
     {
@@ -28,10 +24,9 @@ public class Bot
             AmountOfMoney = 220
         };
         _order = new Order();
+        TakenCustomerMoney = PayForOrder;
         _sushiMenu = MenuController.ParseMenuFromJson();
-        TakeCustomerMoney = PayForOrder;
-        ItemsInCart = ShowCustomerCart;
-        SendEmailToCustomer = EmailSender.SendEmailWithResults;
+        EmailSentToCustomerAfterPaying = EmailSender.IsSentEmailWithResults;
     }
 
     public void StartProgram()
@@ -45,6 +40,10 @@ public class Bot
             if (_isPaid)
             {
                 ShowCustomerItemsToDeliver();
+            }
+            else
+            {
+                TakenCustomerMoney -= PayForOrder;
             }
         }
     }
@@ -212,14 +211,14 @@ public class Bot
         return _customer!.AmountOfMoney >= _order.TotalOrderPrice;
     }
 
-    private void PayForOrder(bool isPaid)
+    private void PayForOrder()
     {
         AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.LoaderToGetMoney)));
         _customer!.AmountOfMoney -= _order.TotalOrderPrice;
         Thread.Sleep(3500);
         AnsiConsole.Write(new Markup(
             TextStrings.GetString(Keys.CurrentBalanceInfo, _customer)));
-        _isPaid = isPaid;
+        _isPaid = true;
     }
 
     private static void SayHelloToCustomer()
@@ -252,6 +251,7 @@ public class Bot
                         _order.CartWithSushi.Add(item);
                         item.AvailableAmountForSell -= _amountToOrder;
                         item.NumberItemWasOrdered = _amountToOrder;
+                        ShowItemsInCart = ShowCustomerCart;
                     }
 
                     AnsiConsole.Write(
@@ -267,10 +267,11 @@ public class Bot
 
         if (_order.CartWithSushi.Count != 0)
         {
-            ItemsInCart();
+            ShowItemsInCart!();
             return true;
         }
 
+        ShowItemsInCart -= ShowCustomerCart;
         return false;
     }
 
@@ -321,7 +322,7 @@ public class Bot
 
             if (customerInput!.Equals("yes"))
             {
-                TakeCustomerMoney(true);
+                TakenCustomerMoney();
             }
         }
     }
@@ -335,7 +336,11 @@ public class Bot
             AnsiConsole.Write(new Markup($"[steelblue1]'{item}' - {item.NumberItemWasOrdered} position(s)[/]\n"));
         }
 
-        SendEmailToCustomer(_customer!);
+        if (EmailSentToCustomerAfterPaying(_customer!))
+        {
+            AnsiConsole.Write(new Markup(TextStrings.GetString(Keys.EmailSentToCustomer)));
+        }
+
         // TODO update menu.json file to rewrite 'availableForSell' value
     }
 }

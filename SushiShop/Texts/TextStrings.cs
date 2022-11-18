@@ -44,7 +44,7 @@ public static class TextStrings
                 Keys.DeliveredInfo,
                 $"[steelblue1]Dear [bold]{_customer!.Name} {_customer.Surname}[/], "
                 + "your order will be delivered to the following address: "
-                + $"[bold]{_customer.Address}[/] during 2h after successfully payment.[/]\n"
+                + $"[bold]{_customer.Address}[/] during 1.5h after successfully payment.[/]\n"
             },
             {
                 Keys.ByeMessage, "[steelblue1]Good bye! Have a nice day![/]"
@@ -71,7 +71,7 @@ public static class TextStrings
             },
             {
                 Keys.FinalDeliveredInfo, $"[steelblue1]Dear [bold]{_customer.Name} {_customer.Surname}[/], "
-                                         + $"your order is going to be delivered to [bold]{_customer.Address}[/] in 2 hours. \nOrder:[/]\n"
+                                         + $"your order is going to be delivered to [bold]{_customer.Address}[/]. \nOrder:[/]\n"
             },
             {
                 Keys.TodayInMenu, "[steelblue1]Today in the menu:[/]\n"
@@ -109,6 +109,10 @@ public static class TextStrings
             },
             {
                 Keys.SavedMessage, "[steelblue1]OK, saved.[/]\n"
+            },
+            {
+                Keys.EmailSentToCustomer,
+                $"[steelblue1]Email with order details was sent to [bold]{_customer.Email}[/].[/]"
             }
         };
     }

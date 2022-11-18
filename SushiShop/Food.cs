@@ -4,5 +4,5 @@ namespace SushiShop;
 
 public class Food
 {
-    [JsonProperty("sushi")] public List<Sushi> Sushi { get; set; }
+    [JsonProperty("sushi")] public List<Sushi>? Sushi { get; set; }
 }
